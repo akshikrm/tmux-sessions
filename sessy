@@ -1,0 +1,25 @@
+#! /bin/bash
+
+
+working_directory=$(find $HOME/Developer -depth 1 -maxdepth 2 -type d | fzf)
+session_name=$(basename "$working_directory")
+
+if [ -z "$session_name" ]; then
+	echo "Error: Session name is required."
+	exit 1  # Exit the function with a non-zero status
+fi
+
+if tmux has-session -t "$session_name" 2>/dev/null;then
+	if [ -n "$TMUX" ]; then
+		tmux switch-client -t "$session_name"
+	else
+		tmux attach-session -t "$session_name"
+	fi
+else 
+	tmux new-session -d -c "$working_directory" -s "$session_name" 
+	if [ -n "$TMUX" ]; then
+		tmux switch-client -t "$session_name"
+	else
+		tmux attach-session -t "$session_name"
+	fi
+fi
